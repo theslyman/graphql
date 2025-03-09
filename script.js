@@ -49,17 +49,10 @@ function showLogin() {
 
 // Show profile section and fetch data
 async function showProfile() {
-  loginSection.style.display = 'none';
-  profileSection.style.display = 'block';
-
-  const jwt = localStorage.getItem('jwt');
-  if (!jwt) {
-    showLogin();
-    return;
-  }
-
   try {
-    // Fetch user info
+    const jwt = localStorage.getItem('jwt');
+    if (!jwt) throw new Error('No JWT found');
+    
     const userData = await fetchGraphQL(jwt, `
       {
         user {
@@ -68,60 +61,21 @@ async function showProfile() {
         }
       }
     `);
-    document.getElementById('username').textContent = userData.data.user[0].login;
-
-    // Fetch total XP
-    const xpData = await fetchGraphQL(jwt, `
-      {
-        transaction_aggregate(where: { type: { _eq: "xp" } }) {
-          aggregate {
-            sum {
-              amount
-            }
-          }
-        }
-      }
-    `);
-    const totalXP = xpData.data.transaction_aggregate.aggregate.sum.amount;
-    document.getElementById('total-xp').textContent = totalXP;
-
-    // Fetch pass/fail data
-    const resultData = await fetchGraphQL(jwt, `
-      {
-        result {
-          grade
-        }
-      }
-    `);
-    const results = resultData.data.result;
-    const passes = results.filter(r => r.grade === 1).length;
-    const fails = results.filter(r => r.grade === 0).length;
-    const ratio = passes / (passes + fails) || 0;
-    document.getElementById('pass-fail-ratio').textContent = `${(ratio * 100).toFixed(2)}%`;
-
-    // Fetch XP over time
-    const xpOverTimeData = await fetchGraphQL(jwt, `
-      {
-        transaction(where: { type: { _eq: "xp" } }, order_by: { createdAt: asc }) {
-          amount
-          createdAt
-        }
-      }
-    `);
-    renderXpOverTime(xpOverTimeData.data.transaction);
-
-    // Fetch XP per project
-    const xpPerProjectData = await fetchGraphQL(jwt, `
-      {
-        transaction(where: { type: { _eq: "xp" } }) {
-          amount
-          object {
-            name
-          }
-        }
-      }
-    `);
-    renderXpPerProject(xpPerProjectData.data.transaction);
+    console.log('userData:', userData);
+    
+    if (!userData.data || !userData.data.user) {
+      throw new Error('User data not found in response');
+    }
+    
+    // Adjust based on actual response: array or object
+    const login = Array.isArray(userData.data.user) 
+      ? userData.data.user[0].login 
+      : userData.data.user.login;
+    document.getElementById('username').textContent = login;
+    
+    // Show profile page
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('profile-page').style.display = 'block';
   } catch (error) {
     console.error('Error fetching data:', error);
     showLogin();
