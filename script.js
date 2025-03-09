@@ -146,23 +146,20 @@ async function fetchGraphQL(jwt, query) {
 // Render XP over time graph (line graph)
 function renderXpOverTime(transactions) {
   const svg = document.getElementById('xp-over-time');
-  svg.innerHTML = ''; // Clear previous content
+  svg.innerHTML = '';
 
   if (transactions.length === 0) return;
 
-  // Calculate cumulative XP
   let cumulativeXP = 0;
   const data = transactions.map(t => {
     cumulativeXP += t.amount;
     return { date: new Date(t.createdAt), xp: cumulativeXP };
   });
 
-  // SVG dimensions
   const width = 500;
   const height = 300;
   const padding = 40;
 
-  // Scales
   const minDate = new Date(Math.min(...data.map(d => d.date)));
   const maxDate = new Date(Math.max(...data.map(d => d.date)));
   const maxXP = Math.max(...data.map(d => d.xp));
@@ -170,23 +167,19 @@ function renderXpOverTime(transactions) {
   const xScale = (date) => ((date - minDate) / (maxDate - minDate)) * (width - 2 * padding) + padding;
   const yScale = (xp) => height - padding - (xp / maxXP) * (height - 2 * padding);
 
-  // Line path
   const path = data.map((d, i) => `${i === 0 ? 'M' : 'L'}${xScale(d.date)},${yScale(d.xp)}`).join(' ');
 
-  // Draw line
   const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   line.setAttribute('d', path);
-  line.setAttribute('stroke', 'blue');
-  line.setAttribute('fill', 'none');
+  line.classList.add('graph-line');
   svg.appendChild(line);
 
-  // Draw axes
   const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
   xAxis.setAttribute('x1', padding);
   xAxis.setAttribute('y1', height - padding);
   xAxis.setAttribute('x2', width - padding);
   xAxis.setAttribute('y2', height - padding);
-  xAxis.setAttribute('stroke', 'black');
+  xAxis.classList.add('graph-axis');
   svg.appendChild(xAxis);
 
   const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -194,18 +187,17 @@ function renderXpOverTime(transactions) {
   yAxis.setAttribute('y1', padding);
   yAxis.setAttribute('x2', padding);
   yAxis.setAttribute('y2', height - padding);
-  yAxis.setAttribute('stroke', 'black');
+  yAxis.classList.add('graph-axis');
   svg.appendChild(yAxis);
 }
 
 // Render XP per project graph (bar chart)
 function renderXpPerProject(transactions) {
   const svg = document.getElementById('xp-per-project');
-  svg.innerHTML = ''; // Clear previous content
+  svg.innerHTML = '';
 
   if (transactions.length === 0) return;
 
-  // Group by project name and sum XP
   const projectXP = {};
   transactions.forEach(t => {
     const project = t.object.name;
@@ -215,40 +207,36 @@ function renderXpPerProject(transactions) {
   const projects = Object.entries(projectXP);
   const maxXP = Math.max(...projects.map(p => p[1]));
 
-  // SVG dimensions
   const width = 500;
   const height = 300;
   const padding = 40;
   const barWidth = (width - 2 * padding) / projects.length;
 
-  // Scales
   const yScale = (xp) => height - padding - (xp / maxXP) * (height - 2 * padding);
 
-  // Draw bars
   projects.forEach((p, i) => {
     const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     bar.setAttribute('x', padding + i * barWidth);
     bar.setAttribute('y', yScale(p[1]));
     bar.setAttribute('width', barWidth - 10);
     bar.setAttribute('height', height - padding - yScale(p[1]));
-    bar.setAttribute('fill', 'green');
+    bar.classList.add('graph-bar');
     svg.appendChild(bar);
 
-    // Label
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.setAttribute('x', padding + i * barWidth + (barWidth - 10) / 2);
     text.setAttribute('y', height - padding + 20);
     text.setAttribute('text-anchor', 'middle');
     text.textContent = p[0];
+    text.classList.add('graph-label');
     svg.appendChild(text);
   });
 
-  // Draw y-axis
   const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
   yAxis.setAttribute('x1', padding);
   yAxis.setAttribute('y1', padding);
   yAxis.setAttribute('x2', padding);
   yAxis.setAttribute('y2', height - padding);
-  yAxis.setAttribute('stroke', 'black');
+  yAxis.classList.add('graph-axis');
   svg.appendChild(yAxis);
 }
