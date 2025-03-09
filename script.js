@@ -18,7 +18,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   const credentials = btoa(`${usernameOrEmail}:${password}`);
 
   try {
-    const response = await fetch('https://((DOMAIN))/api/auth/signin', {
+    const response = await fetch('https://learn.reboot01.com/api/auth/signin', {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${credentials}`
@@ -130,7 +130,7 @@ async function showProfile() {
 
 // Helper function to fetch GraphQL data
 async function fetchGraphQL(jwt, query) {
-  const response = await fetch('https://((DOMAIN))/api/graphql-engine/v1/graphql', {
+  const response = await fetch('https://learn.reboot01.com/api/graphql-engine/v1/graphql', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
